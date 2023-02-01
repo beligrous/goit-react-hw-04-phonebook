@@ -1,91 +1,87 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import { Container } from './App.styled';
 import ContactForm from './ContactForm/ContactForm';
 import Filter from './Filter/Filter';
 import ContactList from './ContactList/ContactList';
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
 
-  componentDidMount() {
-    const initialContacts = localStorage.getItem('contacts');
-    const initialParsedContacts = JSON.parse(initialContacts);
-    initialParsedContacts && this.setState({ contacts: initialParsedContacts });
-  }
+export function App() {
+  const [contacts, setContacts] = useState(() => {
+    const data = JSON.parse(localStorage.getItem('contacts'));
+    return data?.length > 0 ? data : [];
+  });
+  const [filter, setFilter] = useState('');
 
-  componentDidUpdate(prevPorps, prevState) {
-    const { contacts } = this.state;
-    if (prevState.contacts !== contacts) {
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  formSubmit = ({ name, number }) => {
+  const formSubmit = data => {
+    const { name, number } = data;
     const newContact = {
       name,
       id: nanoid(),
       number,
     };
-    const nonEqualArray = this.state.contacts.reduce((acc, item) => {
+    const nonEqualArray = contacts.reduce((acc, item) => {
       item.name.toLowerCase() !== newContact.name.toLowerCase() &&
         acc.push(item);
       return acc;
     }, []);
 
-    if (nonEqualArray.length === this.state.contacts.length) {
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, newContact],
-      }));
+    if (nonEqualArray.length === contacts.length) {
+      setContacts(contacts => [...contacts, newContact]);
     } else {
       alert(`${newContact.name} is already in contacts!`);
     }
   };
 
-  onClickDelete = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(item => item.id !== id),
-    }));
-  };
-
-  onFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
-  };
-
-  findContacts() {
-    const { filter, contacts } = this.state;
+  const findContacts = () => {
     let filtered;
     if (filter === '') {
-      filtered = contacts;
+      return contacts;
     } else {
       filtered = contacts.filter(({ name }) =>
         name.toLowerCase().includes(filter.toLowerCase())
       );
     }
-
     return filtered;
-  }
+  };
 
-  render() {
-    const { filter, contacts } = this.state;
-    const findContactsArray = this.findContacts();
-    return (
-      <Container>
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.formSubmit} />
-        <div>
-          <h2>Contacts</h2>
-          <Filter value={filter} onChange={this.onFilter} />
-          <ContactList
-            filter={filter}
-            contacts={contacts}
-            findContactsArray={findContactsArray}
-            onClick={this.onClickDelete}
-          />
-        </div>
-      </Container>
-    );
-  }
+  const onClickDelete = id => {
+    setContacts(prevContacts => prevContacts.filter(item => item.id !== id));
+  };
+
+  return (
+    <Container>
+      <h1>Phonebook</h1>
+      <ContactForm onSubmit={formSubmit} />
+      <div>
+        <h2>Contacts</h2>
+        <Filter
+          value={filter}
+          onChange={({ target }) => setFilter(target.value)}
+        />
+        <ContactList
+          filter={filter}
+          contacts={contacts}
+          findContactsArray={findContacts()}
+          onClick={onClickDelete}
+        />
+      </div>
+    </Container>
+  );
 }
+
+//   componentDidMount() {
+//     const initialContacts = localStorage.getItem('contacts');
+//     const initialParsedContacts = JSON.parse(initialContacts);
+//     initialParsedContacts && this.setState({ contacts: initialParsedContacts });
+//   }
+
+//   componentDidUpdate(prevPorps, prevState) {
+//     const { contacts } = this.state;
+//     if (prevState.contacts !== contacts) {
+//       localStorage.setItem('contacts', JSON.stringify(contacts));
+//     }
+//   }
