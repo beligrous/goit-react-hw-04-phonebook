@@ -73,15 +73,3 @@ export function App() {
   );
 }
 
-//   componentDidMount() {
-//     const initialContacts = localStorage.getItem('contacts');
-//     const initialParsedContacts = JSON.parse(initialContacts);
-//     initialParsedContacts && this.setState({ contacts: initialParsedContacts });
-//   }
-
-//   componentDidUpdate(prevPorps, prevState) {
-//     const { contacts } = this.state;
-//     if (prevState.contacts !== contacts) {
-//       localStorage.setItem('contacts', JSON.stringify(contacts));
-//     }
-//   }
